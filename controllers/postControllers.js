@@ -1,17 +1,17 @@
-import { uploadPicture } from '../middlewares/uploadPictureMiddleware';
-import Post from '../models/Post';
-import Comment from '../models/Comment';
-import { fileRemover } from '../utils/fileRemover';
-import { v4 as uuidv4 } from 'uuid';
+import { uploadPicture } from "../middlewares/uploadPictureMiddleware";
+import Post from "../models/Post";
+import Comment from "../models/Comment";
+import { fileRemover } from "../utils/fileRemover";
+import { v4 as uuidv4 } from "uuid";
 
 const createPost = async (req, res, next) => {
   try {
     const post = new Post({
-      title: 'sample title',
-      caption: 'sample caption',
+      title: "sample title",
+      caption: "sample caption",
       slug: uuidv4(),
-      body: { type: 'doc', content: [] },
-      photo: '',
+      body: { type: "doc", content: [] },
+      photo: "",
       user: req.user._id,
     });
 
@@ -27,12 +27,12 @@ const updatePost = async (req, res, next) => {
     const post = await Post.findOne({ slug: req.params.slug });
 
     if (!post) {
-      const error = new Error('Post introuvable');
+      const error = new Error("Post introuvable");
       next(error);
       return;
     }
 
-    const upload = uploadPicture.single('postPicture');
+    const upload = uploadPicture.single("postPicture");
 
     const handleUpdatePostData = async (data) => {
       const { title, caption, slug, body, tags, categories } = JSON.parse(data);
@@ -65,7 +65,7 @@ const updatePost = async (req, res, next) => {
         } else {
           let filename;
           filename = post.photo;
-          post.photo = '';
+          post.photo = "";
           fileRemover(filename);
           handleUpdatePostData(req.body.document);
         }
@@ -81,13 +81,13 @@ const deletePost = async (req, res, next) => {
     const post = await Post.findOneAndDelete({ slug: req.params.slug });
 
     if (!post) {
-      const error = new Error('Post introuvable');
+      const error = new Error("Post introuvable");
       return next(error);
     }
 
     const comments = await Comment.deleteMany({ post: post._id });
 
-    return res.json({ message: 'Post supprimé' });
+    return res.json({ message: "Post supprimé" });
   } catch (error) {
     next(error);
   }
@@ -96,23 +96,23 @@ const deletePost = async (req, res, next) => {
 const getPost = async (req, res, next) => {
   try {
     const post = await Post.findOne({ slug: req.params.slug }).populate([
-      { path: 'user', select: ['avatar', 'name'] },
+      { path: "user", select: ["avatar", "name"] },
       {
-        path: 'comments',
+        path: "comments",
         match: { check: true, parent: null },
         populate: [
-          { path: 'user', select: ['avatar', 'name'] },
+          { path: "user", select: ["avatar", "name"] },
           {
-            path: 'replies',
+            path: "replies",
             match: { check: true },
-            populate: [{ path: 'user', select: ['avatar', 'name'] }],
+            populate: [{ path: "user", select: ["avatar", "name"] }],
           },
         ],
       },
     ]);
 
     if (!post) {
-      const error = new Error('Post introuvable');
+      const error = new Error("Post introuvable");
       return next(error);
     }
 
@@ -127,7 +127,7 @@ const getAllPosts = async (req, res, next) => {
     const filter = req.query.recherche;
     let where = {};
     if (filter) {
-      where.title = { $regex: filter, $options: 'i' };
+      where.title = { $regex: filter, $options: "i" };
     }
     let query = Post.find(where);
     const page = parseInt(req.query.page) || 1;
@@ -137,11 +137,11 @@ const getAllPosts = async (req, res, next) => {
     const pages = Math.ceil(total / pageSize);
 
     res.header({
-      'x-filter': filter,
-      'x-totalcount': JSON.stringify(total),
-      'x-currentpage': JSON.stringify(page),
-      'x-pagesize': JSON.stringify(pageSize),
-      'x-totalpagecount': JSON.stringify(pages),
+      "x-filter": filter,
+      "x-totalcount": JSON.stringify(total),
+      "x-currentpage": JSON.stringify(page),
+      "x-pagesize": JSON.stringify(pageSize),
+      "x-totalpagecount": JSON.stringify(pages),
     });
 
     if (page > pages) {
@@ -153,11 +153,11 @@ const getAllPosts = async (req, res, next) => {
       .limit(pageSize)
       .populate([
         {
-          path: 'user',
-          select: ['avatar', 'name', 'verified'],
+          path: "user",
+          select: ["avatar", "name", "verified"],
         },
       ])
-      .sort({ updatedAt: 'desc' });
+      .sort({ updatedAt: "desc" });
 
     return res.json(result);
   } catch (error) {
