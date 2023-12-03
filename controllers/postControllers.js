@@ -97,6 +97,7 @@ const getPost = async (req, res, next) => {
   try {
     const post = await Post.findOne({ slug: req.params.slug }).populate([
       { path: "user", select: ["avatar", "name"] },
+      { path: "categories", select: ["title"] },
       {
         path: "comments",
         match: { check: true, parent: null },
