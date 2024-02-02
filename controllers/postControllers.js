@@ -7,8 +7,8 @@ import { v4 as uuidv4 } from "uuid";
 const createPost = async (req, res, next) => {
   try {
     const post = new Post({
-      title: "sample title",
-      caption: "sample caption",
+      title: "exemple titre",
+      caption: "exemple légende",
       slug: uuidv4(),
       body: { type: "doc", content: [] },
       photo: "",
